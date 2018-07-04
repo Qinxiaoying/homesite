@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ article.title }} | {% endblock %}
+
+{% block content %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h2>{{ article.title }}</h2>
+		<ul class="list-inline text-muted">
+			<li>
+				<span class="glyphicon glyphicon-user small"></span>
+				<a href="{{ url_for('author', name=article.user.name) }}">{{ article.user.name }}</a>
+			</li>
+			<li>
+				<span class="glyphicon glyphicon-time small"></span>
+				{{ article.created | string() | truncate(19,True,'') }}
+			</li>
+			<li>
+				<span class="glyphicon glyphicon-tag small"></span>
+				<a href="{{ url_for('category_articles', category=article.category.name) }}">{{ article.category.name }}</a>
+			</li>
+			<li>
+				<span class="glyphicon glyphicon-eye-open small"></span>
+				<span>{{ article.read or 0 }}</span>
+			</li>
+			<li>
+			<!-- 如果当前文章是自己的，显示编辑按钮 -->
+			{%- if g.user and g.user.id==article.user_id -%}
+				<a class="btn btn-default btn-xs" href="{{ url_for('article_update', id=article.id, slug=article.slug) }}">
+					<span class="glyphicon glyphicon-edit"></span> 编辑
+				</a>
+				<a class="btn btn-danger btn-xs" href="{{ url_for('delete', id=article.id, slug=article.slug) }}"
+					name="delete_article">
+					<span class="glyphicon glyphicon-trash"></span> 删除
+				</a>
+			{%- endif -%}
+			</li>
+		</ul>
+	</div>
+	<div class="panel-body">
+		{{ article.body | safe }}
+	</div>
+	<div class="panel-footer">
+		<!-- 版权声明 -->
+		<div class="text-muted">
+			<p>
+				原文地址：<a href="">{{ url_for('show_article', id=article.id, slug='id', _external=True) }}</a>&ensp;
+				作者：<a href="{{ url_for('author', name=article.user.name) }}">{{ article.user.name }}</a>
+			</p>
+			<p>
+				版权声明：自由转载-非商用-非衍生-保持署名&ensp;
+				<a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a>
+			</p>
+		</div>
+		<!-- 搜狐畅言 -->
+		<div id="SOHUCS" sid="{{ article.id }}"></div>
+		<script charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/changyan.js" ></script>
+		<script type="text/javascript">
+		    window.changyan.api.config({
+		        appid: 'cyrqug06X',
+		        conf: 'prod_3bf1022ebed1c38cc97cbd8f1e7d76e7'
+		    });
+		</script>   
+		<!-- 上下篇导航 -->
+		<nav>
+		  <ul class="pager">
+		    <li>
+		    	{%- if before_and_after['before'] -%}
+		    	<a href="{{ url_for('show_article', id=before_and_after['before'].id, slug=before_and_after['before'].slug) }}" data-toggle="tooltip" data-placement="top" title="{{ before_and_after['before'].title }}">
+		    	{%- else -%}
+		    	<a class="disabled">
+		    	{%- endif -%}
+		    		<span aria-hidden="true">&larr;</span> 上一篇
+		    	</a>
+		    </li>
+		    <li>
+		    	{%- if before_and_after['after'] -%}
+		    	<a href="{{ url_for('show_article', id=before_and_after['after'].id, slug=before_and_after['after'].slug) }}" data-toggle="tooltip" data-placement="top" title="{{ before_and_after['after'].title }}">
+		    	{%- else -%}
+		    	<a class="disabled">
+		    	{%- endif -%}
+		    		下一篇 <span aria-hidden="true">&rarr;</span>
+		    	</a>
+		    </li>
+		  </ul>
+		</nav>
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- 启用 tooltip -->
+<script>
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+</script>
+<!-- 删除警告 -->
+<script>
+	var del = document.getElementsByName('delete_article');
+	for (var i=0;i<del.length;i++)
+	{
+		del[i].onclick=function(){return window.confirm('该文章将被永久删除，该操作不可恢复，确定？');};
+	}
+</script>
+{% endblock %}

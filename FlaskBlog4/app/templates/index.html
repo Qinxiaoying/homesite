@@ -1,0 +1,227 @@
+{% extends 'layout.html' %}
+
+{% block title %}首页 | {% endblock %}
+
+{% block content %}
+
+{%- include "__flash.html" -%}
+
+<!-- <div class="jumbotron">
+	<h1>Hello, world!</h1>
+	<p>...</p>
+	<p><a class="btn btn-primary btn-sm" href="#" role="button">Learn more</a></p>
+</div> -->
+
+{%- if not articles[0] -%}
+<div class="alert alert-warning" role="alert">直到现在……还没有文章呢！</div>
+{%- else -%}
+<div class="row">
+
+	<!-- 文章列表 -->
+	<div class="col-md-8">
+		{%- for post in articles -%}
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3><a href="{{ url_for('show_article', id=post.id, slug=post.slug) }}">{{ post.title }}</a></h3>
+				<ul class="list-inline text-muted">
+					<li>
+						<span class="glyphicon glyphicon-user small"></span>
+						<a href="{{ url_for('author', name=post.user.name) }}">{{ post.user.name }}</a>
+					</li>
+					<li>
+						<span class="glyphicon glyphicon-time small"></span>
+						{{ post.created | string | truncate(11,True,'') }}
+					</li>
+					<li>
+						<span class="glyphicon glyphicon-tag small"></span>
+						<a href="{{ url_for('category_articles', category=post.category.name) }}">{{ post.category.name }}</a>
+					</li>
+					<li>
+						<span class="glyphicon glyphicon-eye-open small"></span>
+						<span>{{ post.read or 0 }}</span>
+					</li>
+				</ul>
+			</div>
+			<div class="panel-body article-body">
+				{{ post.body | myhtmlstrip }}
+				<p class="text-right">
+					<a class="btn btn-default btn-xs" href="{{ url_for('show_article', id=post.id, slug=post.slug) }}">
+						阅读全文
+					</a>
+				</p>
+			</div>
+		</div>
+		{%- endfor -%}
+		{%- if lastpage > 1 and lastpage >= page+2 -%}
+		<div class="panel panel-default my_show_more"><!-- .my_show_more in custom.css -->
+			<button class="btn btn-default btn-lg btn-block" id="my_show_more">
+				<span id="perpage" style="display:none;">{{ perpage }}</span>加载第 <span id="num_of_page">{{ page+2 }}</span> &frasl; <span id="lastpage">{{ lastpage }}</span> 页
+			</button>
+		</div>
+		{%- endif -%}
+	</div>
+	
+	<!-- 边栏 -->
+	<div class="col-md-4">
+		<!-- 分类榜 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span class="glyphicon glyphicon-th-list"></span> 分类榜</h3>
+			</div>
+			<ul class="list-group">
+				{%- for item in category_articles -%}
+				<li class="list-group-item">
+					<span class="badge">{{ item[1] }} 篇</span>
+					<a href="{{ url_for('category_articles', category=item[0]) }}" class="btn btn-primary btn-xs">
+						<span class="glyphicon glyphicon-tag"></span>
+						{{ item[0] }}
+					</a>
+				</li>
+				{%- endfor -%}
+			</ul>
+		</div>
+		<!-- 最新发表 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span class="glyphicon glyphicon-bell"></span> 最新发表</h3>
+			</div>
+			<div class="panel-body">
+			{%- for post in last_10_articles -%}
+				<p>
+					<span class="glyphicon glyphicon-send text-muted"></span>
+					<a href="{{ url_for('show_article', id=post.id, slug=post.slug) }}">
+						{{ post.title }}
+						<span class="badge">{{ post.created_time_ago | mytimestrip }}</span>
+					</a>
+				</p>
+			{%- endfor -%}
+			</div>
+		</div>
+		<!-- 作者榜 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> 作者</h3>
+			</div>
+			<ul class="list-group">
+				{%- for item in user_articles -%}
+				<li class="list-group-item">
+					<span class="badge">{{ item[1] }} 篇</span>
+					<a href="{{ url_for('author', name=item[0]) }}">
+						<span class="glyphicon glyphicon-user"></span>
+						{{ item[0] }}
+					</a>
+				</li>
+				{%- endfor -%}
+			</ul>
+		</div>
+		<!-- 阅读榜 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span class="glyphicon glyphicon-stats"></span> TOP 10 阅读</h3>
+			</div>
+			<div class="panel-body">
+				{%- for article in top_10_read -%}
+				<p>
+					<span class="glyphicon glyphicon-star text-muted"></span>
+					<a href="{{ url_for('show_article', id=article.id, slug=article.slug) }}">
+						{{ article.title }}
+						<span class="badge">{{ article.read or 0 }} 阅读</span>
+					</a>
+				</p>
+				{%- endfor -%}
+			</div>
+		</div>
+	</div>
+	
+</div>
+{%- endif -%}
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Ajax _load_more
+$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};
+$(document).ready(function(){
+	// get perpage and lastpage
+	var perpage = $('span#perpage').text();
+	var lastpage = $('span#lastpage').text();
+	$('button#my_show_more').click(function() {
+		// get page
+		var page = $('span#num_of_page').text();
+		var _load_more_page = page - 1
+		$.getJSON($SCRIPT_ROOT + '/_load_more', {page: _load_more_page}, function(data) {
+			// get isnextpage first
+			var isnextpage = data.isnextpage;
+			if (isnextpage == 'error') {
+				// error in connection to database
+				alert("抱歉，链接超时，请重试");
+			} else if (isnextpage == 'none') {
+				// hide the button if no more articles loaded
+				$('button#my_show_more').parent().hide();
+			} else {
+				var lens = data.lens;
+				var title = data.title;
+				var user_name = data.user_name;
+				var created = data.created;
+				var category_name = data.category_name;
+				var read = data.read;
+				var body = data.body;
+				var art_url = data.art_url;
+				var name_url = data.name_url;
+				var cat_url = data.cat_url;
+				// hide the button if no more
+				if (isnextpage == "no_more") {
+					$('button#my_show_more').parent().hide();
+				};
+				// show the loaded articles
+				for (var i = 0; i < lens; i++) {
+					$('button#my_show_more').parent().before(
+						'<div class="panel panel-default"> '+
+							'<div class="panel-heading"> '+
+								'<h3><a href="'+ art_url[i] +'">'+ title[i] +'</a></h3> '+
+								'<ul class="list-inline text-muted"> '+
+									'<li> '+
+										'<span class="glyphicon glyphicon-user small"></span> '+
+										'<a href="'+ name_url[i] +'">'+ user_name[i] +'</a> '+
+									'</li> '+
+									'<li> '+
+										'<span class="glyphicon glyphicon-time small"></span> '+
+										created[i] +
+									'</li> '+
+									'<li> '+
+										'<span class="glyphicon glyphicon-tag small"></span> '+
+										'<a href="'+ cat_url[i] +'">'+ category_name[i] +'</a> '+
+									'</li> '+
+									'<li> '+
+										'<span class="glyphicon glyphicon-eye-open small"></span> '+
+										'<span>'+ read[i] +'</span> '+
+									'</li> '+
+								'</ul> '+
+							'</div> '+
+							'<div class="panel-body article-body"> '+
+								body[i] +
+								'<p class="text-right"> '+
+									'<a class="btn btn-default btn-xs" href="'+ art_url[i] +'"> '+
+										'阅读全文'+
+									'</a> '+
+								'</p> '+
+							'</div> '+
+						'</div>'
+					);
+				};//end for
+			};//end if
+		});//end getJSON
+		page++;
+		// set loading effect
+		$('button#my_show_more').delay(0).queue(function(){
+			$(this).addClass('m-progress').dequeue();
+		}).delay(3000).queue(function(){
+			if (page <= lastpage) {$('span#num_of_page').text(page);};
+			$(this).removeClass('m-progress').dequeue();
+		});
+		return false;
+	});//end click
+});
+</script>
+{% endblock %}

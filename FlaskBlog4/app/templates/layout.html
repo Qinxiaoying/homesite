@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="description" content="辈友文化">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %}{% endblock %}辈友文化</title>
+	<link rel="shortcut icon" href="{{ url_for('static', filename='css/favicon.ico') }}" />
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/btn-loading.css') }}"/>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}"/>
+	<!--[if lt IE 9]>
+	<script src="{{ url_for('static', filename='js/html5shiv.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/respond.min.js') }}"></script>
+	<![endif]-->
+</head>
+<body>
+<!-- 顶部导航 -->
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="menu-nav">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">切换导航</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">恩索TNT</a>
+		</div>
+		<div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="/"><span class="glyphicon glyphicon-home"></span> 首页</a></li>
+				<!-- <li><a href="{{ url_for('category_all') }}"><span class="glyphicon glyphicon-tags"></span> 分类</a></li> -->
+				<!-- <li><a href="{{ url_for('author_all') }}"><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> 作者</a></li> -->
+				{% if g.user %}
+				<li><a href="{{ url_for('author', name=g.user.name) }}"><span class="glyphicon glyphicon-list"></span> 个人空间</a></li>
+				<li><a href="{{ url_for('article_create') }}"><span class="glyphicon glyphicon-pencil"></span> 写</a></li>
+				<!-- <li><a href="{{ url_for('collect', name=g.user.name) }}"><span class="glyphicon glyphicon-import"></span> 收藏</a></li> -->
+				<li><a href="{{ url_for('followed', name=g.user.name) }}"><span class="glyphicon glyphicon-headphones"></span> 关注</a></li>
+				<li><a href="{{ url_for('follower', name=g.user.name) }}"><span class="glyphicon glyphicon-heart"></span> 粉丝</a></li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+						<span class="glyphicon glyphicon-user"></span>
+						{{ g.user.name }}&nbsp;<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="{{ url_for('settings') }}"><span class="glyphicon glyphicon-cog"></span> 个人信息</a></li>
+						<li><a href="{{ url_for('signout') }}"><span class="glyphicon glyphicon-log-out"></span> 退出</a></li>
+					</ul>
+				</li>
+				{% else %}
+				<li><a href="{{ url_for('signup') }}"><span class="glyphicon glyphicon-check"></span> 注册</a></li>
+				<li><a href="{{ url_for('signin') }}"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li>
+				<li><a href="#" data-toggle="modal" data-target="#about"><span class="glyphicon glyphicon-info-sign"></span> 关于</a></li>
+				{% endif %}
+			</ul>
+			<!-- 搜索 -->
+			<form class="navbar-form navbar-right" action="{{ url_for('search') }}" method="post">
+				<div class="input-group">
+					<input type="text" class="form-control" name="keyword" placeholder="搜索..." required>
+					<span class="input-group-btn">
+						<button type="submit" class="btn btn-default">
+							<span class="glyphicon glyphicon-search"></span>
+						</button>
+					</span>
+				</div>
+			</form><!-- 搜索 -->
+		</div>
+	</div>
+</div>
+
+<!-- 主体板块 -->
+<div class="container">
+	{% block content %}
+	{% endblock %}
+	<!-- 关于 -->
+	<div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span
+							aria-hidden="true">&times;</span><span class="sr-only">关闭</span></button>
+					<h4 class="modal-title" id="modal-label">恩索TNT团队博客</h4>
+				</div>
+				<div class="modal-body">
+					<p>恩索团队 <strong>T</strong>he E<strong>N</strong>SO <strong>T</strong>eam</p>
+					<p>工作总结 | 学习笔记 | 资源共享 | 经验交流</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						<span class="glyphicon glyphicon-thumbs-up"></span> 好
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 底部板块 -->
+<div class="container footer">
+	<div class="text-center">Copyleft&nbsp;<span id="theyear"></span>&nbsp;南京恩索气象科技有限公司</div>
+</div>
+
+<!-- JavaScripts -->
+<script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script>$('ul.nav > li > a[href="' + document.location.pathname + '"]').parent().addClass('active');</script>
+<!-- 页脚年份 -->
+<script>var now = new Date();document.getElementById('theyear').innerHTML=now.getFullYear();</script>
+
+{% block javascripts %}
+{% endblock %}
+
+</body>
+</html>

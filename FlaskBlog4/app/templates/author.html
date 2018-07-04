@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ author.name }} | {% endblock %}
+
+{% block content %}
+{%- include "__flash.html" -%}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="media">
+				  <div class="media-left">
+				    <img class="media-object" src="{{ author.gravatar(size=64) }}" alt="用户头像">
+				  </div>
+				  <div class="media-body">
+				    <h2 class="media-heading">
+				    	{{ author.name }}
+				    	<small>
+				    		{{ author.nickname }}来自<span class="user_location">{{ author.location }}</span>
+				    	</small>
+				    </h2>
+				    <p class="text-muted">
+					    注册于 {{ author.member_since | string() | truncate(11,True,'') }}，上次登录于
+					    {{ author.last_seen_time_ago | mytimestrip }}
+				    </p>
+				  </div>
+				</div>
+				<p class="text-muted">
+					<span class="user_about_me">{{ author.about_me }}</span>
+					{% if g.user.id==author.id %}
+						<a href="{{ url_for('settings') }}" class="btn btn-default btn-xs">
+							<span class="glyphicon glyphicon-edit"></span> 编辑
+						</a>
+					{% endif %}
+				</p>
+				<p>
+					发文 <span class="badge">{{ author.articles.count() }} 篇</span>
+					&ensp;
+					关注 <a href="{{ url_for('followed', name=author.name) }}"><span class="badge">{{ author.followed.count() }} 人</span></a>
+					{% if g.user and g.user != author and author.is_following(g.user) %}
+					<span class="label label-success">已关注我</span>
+					{% endif %}
+					&ensp;
+					粉丝 <a href="{{ url_for('follower', name=author.name) }}"><span class="badge">{{ author.followers.count() }} 人</span></a>
+					{% if g.user and g.user.can(Permission.FOLLOW) and g.user != author %}
+						{%- if not g.user.is_following(author) -%}
+						<a class="label label-success" href="{{ url_for('follow',name=author.name) }}">关注 Ta</a>
+						{%- else -%}
+						<a class="label label-danger" href="{{ url_for('unfollow',name=author.name) }}">取消关注</a>
+						{%- endif -%}
+					{% endif %}
+				</p>
+			</div>
+		</div>
+	</div>
+	{%- if not author.confirmed -%}
+		<div class="panel-body">
+		{%- if g.user.id==author.id -%}
+			<h2><small>您尚未通过 Email 确认账户</small></h2>
+			<p>
+				请查看您的注册邮箱 {{ author.email }}，您应该已经收到一封包含确认链接的邮件。
+				再发送一次？请点击<a href="{{ url_for('resend_confirmation') }}">这里</a>
+			</p>
+		{%- else -%}
+			<p>
+				这位大神忙得没有时间验证邮箱……
+			</p>
+		{%- endif -%}
+		</div>
+	{%- else -%}
+		{%- if not author.articles.count() -%}
+		<div class="panel-body">
+			<p>
+			{%- if g.user.id==author.id -%}
+				写下你的第一篇文章，分享给你的团队
+				<a href="{{ url_for('article_create') }}" class="btn btn-success btn-xs">出发</a>
+			{%- else -%}
+				这家伙可真懒，啥都没写就跑了……
+			{%- endif -%}
+			</p>
+		</div>
+		{%- else -%}
+		<table class="table table-hover table-striped">
+			<thead>
+				  <tr>
+					<th><span class="glyphicon glyphicon-file text-muted"></span> 日志名称</th>
+					<th><span class="glyphicon glyphicon-tag text-muted"></span> 分类</th>
+					<th><span class="glyphicon glyphicon-time text-muted"></span> 发表时间</th>
+					<th><span class="glyphicon glyphicon-cog text-muted"></span> 操作</th>
+				  </tr>
+			</thead>
+			{%- for post in author.articles.order_by(Article.created.desc()).all() -%}
+			<tr>
+				<td>
+					<a href="{{ url_for('show_article', id=post.id, slug=post.slug) }}">
+						{{ post.title | truncate(20,True) }}
+					</a>
+				</td>
+				<td>
+					<a href="{{ url_for('category_articles', category=post.category) }}">{{ post.category }}</a>
+				</td>
+				<td>
+					{{ post.created | string() | truncate(11,True,'') }} 
+				</td>
+				<td>
+				{%- if g.user and g.user.id==post.user_id -%}
+					<a class="btn btn-default btn-xs" href="{{ url_for('article_update', id=post.id, slug=post.slug) }}">
+						<span class="glyphicon glyphicon-edit"></span> 编辑
+					</a>
+					<a class="btn btn-danger btn-xs" href="{{ url_for('delete', id=post.id, slug=post.slug) }}"
+						name="delete_article">
+						<span class="glyphicon glyphicon-trash"></span> 删除
+					</a>
+				{%- else -%}
+					<span class="glyphicon glyphicon-ban-circle"></span>
+				{%- endif -%}
+				</td>
+			</tr>
+			{%- endfor -%}
+		</table>
+		{%- endif -%}
+	{%- endif -%}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{% include '__about_me__.html' %}
+<!-- 删除警告 -->
+<script>
+	var del = document.getElementsByName('delete_article');
+	for (var i=0;i<del.length;i++)
+	{
+		del[i].onclick=function(){return window.confirm('该文章将被永久删除，该操作不可恢复，确定？');};
+	}
+</script>
+{% endblock %}

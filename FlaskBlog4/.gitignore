@@ -1,0 +1,7 @@
+# ignore
+*.pyc
+whoosh_index/*
+runserver-by-tornado.bat
+runserver-by-manager.bat
+read+1.py
+read-1.py

@@ -1,0 +1,15 @@
+<script>
+	function blankfill(cls,words){
+		var x = $(cls);
+		if (x.length >=1) {
+			x.each(function(){
+				if ($(this).text()=="") {
+					$(this).text(words);
+				}
+			})
+		}
+	}
+
+	blankfill('.user_location','E星球');
+	blankfill('.user_about_me','这家伙骨头真硬，啥都不肯说……');
+</script>

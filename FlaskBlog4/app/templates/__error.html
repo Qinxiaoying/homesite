@@ -1,0 +1,7 @@
+{%- for field in form.errors -%}
+	{%- for error in form.errors[field] -%}
+		<div class="alert alert-danger" role="alert">
+			<button class="close" data-dismiss="alert">&times;</button><strong>抱歉，</strong>{{error}}！
+		</div>
+	{%- endfor -%}
+{%- endfor -%}

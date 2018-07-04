@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}登录 | {% endblock %}
+
+{% block content %}
+<div class="panel panel-default form">
+	<div class="panel-heading">
+		<h2><span class="glyphicon glyphicon-log-in"></span> 登录</h2>
+	</div>
+	<div class="panel-body">
+		{%- include "__error.html" -%}
+		<form role="form" action="{{ url_for('signin') }}" method="post">
+		{{ form.hidden_tag() }}
+		<div class="form-group">
+		<label class="control-label" for="email">*Email</label>
+		{{ form.email(class="form-control",id="email",required="True") }}
+		</div>
+		<div class="form-group">
+		<label class="control-label" for="password">*密码</label>
+		{{ form.password(class="form-control",id="password",required="True") }}
+		</div>
+		<a href="{{ url_for('index') }}" class="btn btn-default">
+			<span class="glyphicon glyphicon-remove"></span> 取消
+		</a>
+		<button type="submit" name="submit" class="btn btn-primary">
+			<span class="glyphicon glyphicon-ok"></span> 登录
+		</button>
+		</form>
+	</div>
+</div>
+{% endblock %}

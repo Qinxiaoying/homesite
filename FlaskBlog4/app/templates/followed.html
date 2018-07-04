@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ user.name }}的关注 | {% endblock %}
+
+{% block content %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h2>{{ user.name }}的关注：<span class="text-muted">{{ followeds | length }} 人</span></h2>
+	</div>
+	{%- if not followeds[0] -%}
+	<div class="panel-body">
+		大神超牛，从不关心别人……
+	</div>
+	{%- else -%}
+	<ul class="list-group">
+		{%- for follow in followeds -%}
+		<li class="list-group-item">
+			<a href="{{ url_for('author',name=follow.followed.name) }}">
+				<img class="img-rounded profile-thumbnail" src="{{ follow.followed.gravatar(size=24) }}">
+				{{ follow.followed.name }}
+			</a>&ensp;
+			<span class="text-muted user_about_me">{{ follow.followed.about_me | truncate(20,True,'...') }}</span>&ensp;
+			{%- if g.user.id == user.id -%}
+				{%- if follow.followed.is_following(g.user) -%}
+				<span class="label label-success"><span class="glyphicon glyphicon-transfer"></span> 已相互关注</span>&ensp;
+				{%- else -%}
+				<span class="text-success"><span class="glyphicon glyphicon-ok"></span> 关注于 {{ follow.timestamp | string | truncate(11,True,'') }}</span>
+				{%- endif -%}
+				<a class="label label-danger" href="{{ url_for('unfollow',name=follow.followed.name) }}">取消关注</a>
+			{%- endif -%}
+		</li>
+		{%- endfor -%}
+	</ul>
+	{%- endif -%}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{% include '__about_me__.html' %}
+{% endblock %}

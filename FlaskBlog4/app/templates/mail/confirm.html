@@ -1,0 +1,13 @@
+你好 {{ user.name }}，
+
+欢迎使用恩索 TNT 团队博客！
+
+请点击以下连接确认账户:
+
+<a href="{{ url_for('confirm', token=token, _external=True) }}">{{ url_for('confirm', token=token, _external=True) }}</a>
+
+
+
+恩索 TNT 小组
+
+注：请不要回复本邮件。
