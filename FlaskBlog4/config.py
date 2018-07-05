@@ -15,7 +15,7 @@ class Config:
     MAIL_SENDER = os.environ.get('MAIL_SENDER') or 'FlaskBlog Admin <bmobliam@163.com>'
     MAIL_SUBJECT_PREFIX = '[FlaskBlog]'
     # administrator
-    THISSITE_ADMIN = os.environ.get('THISSITE_ADMIN') or 'renyu_yy@126.com'
+    THISSITE_ADMIN = os.environ.get('THISSITE_ADMIN') or '758831425@qq.com'
     # set the number of articles to be shown per page
     ARTICLES_PER_PAGE = 7
     # set the location for the whoosh index
@@ -29,7 +29,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://blog:blog@10.226.110.124:3306/blog'
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://root:123455@localhost:3306/blog'
 
 
 class ProductionConfig(Config):
@@ -41,5 +41,5 @@ config = {
     'testing': TestingConfig,
     'production': ProductionConfig,
     
-    'default': DevelopmentConfig
+    'default': TestingConfig
 }
